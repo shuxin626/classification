@@ -116,7 +116,7 @@ def ResNet18(in_ch, num_classes):
     return ResNet(in_ch, BasicBlock, [2, 2, 2, 2, 3], num_classes=num_classes)
 
 def ResNet10(in_ch, num_classes):
-    return ResNet(in_ch, BasicBlock, [1, 1, 1, None, None], num_classes=num_classes)
+    return ResNet(in_ch, BasicBlock, [1, 2, 1, None, None], num_classes=num_classes)
 
 def ResNet6(in_ch, num_classes):
     return ResNet(in_ch, BasicBlock, [1, 1, None, None, None], num_classes=num_classes)
