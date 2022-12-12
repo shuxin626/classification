@@ -94,7 +94,22 @@ class ResNet(nn.Module):
             self.in_planes = planes * block.expansion
         return nn.Sequential(*layers)
 
-    def forward(self, x):
+    def activations_hook(self, grad):
+        self.gradients = grad
+
+    def get_activations_gradient(self):
+        return self.gradients
+    
+    def get_activations(self, x):
+        out = F.relu(self.bn1(self.conv1(x)))
+        out = F.max_pool2d(out, 3, 2)
+        out = self.layer1(out)
+        out = self.layer2(out)
+        out = self.layer3(out) if self.layer3 is not None else out
+        out = self.layer4(out) if self.layer4 is not None else out
+        return out
+    
+    def forward(self, x, cal_grad_cam=False):
         # print('x', x.shape)
         # raise Exception 
         out = F.relu(self.bn1(self.conv1(x)))
@@ -103,9 +118,9 @@ class ResNet(nn.Module):
         out = self.layer2(out)
         out = self.layer3(out) if self.layer3 is not None else out
         out = self.layer4(out) if self.layer4 is not None else out
+        if cal_grad_cam: h = out.register_hook(self.activations_hook)
         out = F.avg_pool2d(out, 4)
         out = self.layer5(out) if self.layer5 is not None else out
-
 
         out = out.view(out.size(0), -1)
         out = self.linear(out)
@@ -116,7 +131,7 @@ def ResNet18(in_ch, num_classes):
     return ResNet(in_ch, BasicBlock, [2, 2, 2, 2, 3], num_classes=num_classes)
 
 def ResNet10(in_ch, num_classes):
-    return ResNet(in_ch, BasicBlock, [1, 2, 1, None, None], num_classes=num_classes)
+    return ResNet(in_ch, BasicBlock, [1, 1, 1, None, None], num_classes=num_classes)
 
 def ResNet6(in_ch, num_classes):
     return ResNet(in_ch, BasicBlock, [1, 1, None, None, None], num_classes=num_classes)

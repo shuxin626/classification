@@ -2,6 +2,7 @@ import os
 import torch
 import matplotlib.pyplot as plt
 import glob
+from config import *
 
 
 def cond_mkdir(path):

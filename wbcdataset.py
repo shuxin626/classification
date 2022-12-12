@@ -125,6 +125,7 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, index):
         image = self.data[index, ...]
+        image[image<0.05] = 0
         target = self.target[index]
         image = torch.tensor(image)
         if self.transforms is not None: image = self.transforms(image)
