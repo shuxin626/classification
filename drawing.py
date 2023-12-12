@@ -46,15 +46,15 @@ def scatter3d_draw(df, cell_types):
 def prc_draw(result_dict, cell_type):
     traces = []
     for i in range(result_dict['score'].shape[1]):
-        y_true_binary = (result_dict['target'] == i).int()
+        y_true_binary = (result_dict['target'] == i)
         precision, recall, _ = precision_recall_curve(y_true_binary, result_dict['score'][:, i])
-        trace = go.Scatter(x=recall, y=precision, name='', mode='lines', marker_color=color_dict[cell_type[i]])
+        trace = go.Scatter(x=recall, y=precision, mode='lines', marker_color=color_dict[cell_type[i]], name=cell_type[i])
         traces.append(trace)
 
     layout = go.Layout(
         title='Precision-Recall Curves per Class',
         xaxis=dict(title='Recall'),
-        yaxis=dict(title='Precision'))
+        yaxis=dict(title='Precision'),)
 
     fig = go.Figure(data=traces, layout=layout)
     fig.show()

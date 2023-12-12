@@ -18,7 +18,7 @@ class ClassificationTester(object):
         self.criterion = nn.CrossEntropyLoss()
         self.dataset_for_test = dataset_for_test
         self.tsne_param = eval_param['tsne_param']
-        self.draw_prc = eval_param['dra_prc']
+        self.draw_prc = eval_param['draw_prc']
         self.type_str = type_str
 
     def test(self, dataloader):
@@ -28,7 +28,7 @@ class ClassificationTester(object):
         correct = 0
         total = 0
         # for subbatch mode
-        outputs_all = torch.tensor([]).to(device)
+        outputs_all = torch.tensor([])
         feature_all = torch.tensor([])
         targets_all = torch.tensor([])
         
