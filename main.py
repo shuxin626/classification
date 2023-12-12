@@ -12,9 +12,9 @@ mode = 'train' # from ['train', 'test', 'grad_cam']
 
 train_param = {
     'optimizer':'sgd', # ['sgd', 'adam']
-    'lr': 0.0001,
-    'batch_size': 64,
-    'type-str': 'b-t', # ['b-t', 'm-g-(b-t)', 'm-g-b-t']
+    'lr': 0.0005,
+    'batch_size': 32,
+    'type-str': 'm-g-b-t', # ['b-t', 'm-g-(b-t)', 'm-g-b-t']
     'val_num_per_type': 100, 
     'shuffle_data': True,
     'net': 'unet10',
@@ -27,9 +27,9 @@ train_param = {
         'dir_name_suffix': '',
         'metrics': 'val_loss',
     },
-    'data_folder': '../clean_dataset/',
+    'data_folder': '../direct_cut/',
     'pretrained': {
-        'load_pretrained':  True, # for fine-tune b-t classifier
+        'load_pretrained': False, # for fine-tune b-t classifier
         'ckpt_dir': 'checkpoint/unet10-64-0.0005-m-g-(b-t)',
         'ckpt_num': None,  # int
     }
@@ -42,10 +42,10 @@ eval_param = {
     'cascade_param':
         {
             'if_cascade': True,
-            'ckpt_dir': 'checkpoint/unet10-64-0.0001-b-t',
+            'ckpt_dir': 'checkpoint/unet10-32-0.0005-b-t',
             'further_classify_which_type_in_first_model': 2, # int
         },
-    'tsne_param': {
+    'tsne_param': { # only take effect when 'if_cascade' = False
         'cal_tsne': True,
         'path_to_save_data': 'tsne_data/test_tsne_and_targets.csv',
         'draw_figure': True,

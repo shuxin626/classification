@@ -4,6 +4,7 @@ from torchvision import transforms
 from torch.utils.data.sampler import SubsetRandomSampler, WeightedRandomSampler
 import pickle
 import re
+import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -14,7 +15,7 @@ def dataio(folder_name, batch_size, shuffle_data=True, val_num_per_type=100, typ
     train_indices, train_sampling_weight, val_indices = split_train_and_val(dataset_train_val.index_for_each_type, val_num_per_type, shuffle_data=shuffle_data)
 
     data_transforms =  transforms.Compose([
-                        transforms.RandomAffine(degrees=180, translate=(0.1, 0.1)),
+                        transforms.RandomAffine(degrees=180, translate=(0, 0)),
                         ]
                         )
     
@@ -51,6 +52,10 @@ def split_train_and_val(index_for_each_type, val_num_per_type, shuffle_data=True
 class WBCDataSet(Dataset):
     def __init__(self, train, folder_name, type_str='b-t-m-g'):
         self.dataset, self.targetset = self.load_data_from_pickle(train, folder_name)
+        if self.dataset.shape[1] == 2:
+            self.dataset = self.dataset[:, 0, ...]
+            self.dataset = self.dataset[:, np.newaxis, :, :]
+            self.targetset = self.targetset + 1 # for direct_cut dataset
         self.dataset, self.targetset = self.select_type(type_str, self.dataset, self.targetset)
         self.index_for_each_type = self.get_index_for_each_type(self.targetset)
         self.type_count = np.max(self.targetset) + 1
@@ -79,7 +84,7 @@ class WBCDataSet(Dataset):
         return dataset, targetset
 
     def decode_select_type_str(self, type_str: str, label_set):
-        type_directory= {'b': 0, 't': 1, 'm': 2, 'g': 3}
+        type_directory= {'b': 0, 't': 1, 'm': 2, 'g': 3, 'cd4': 4, 'cd8': 5}
         type_str_list = re.findall(r'[a-zA-Z]+\d*', type_str)
         type_idx_list = [type_directory[type_name] for type_name in type_str_list]
         target_idx_list = self.string_to_position_dict(type_str)
@@ -105,22 +110,19 @@ class WBCDataSet(Dataset):
         return index_for_each_type
     
     def string_to_position_dict(slef, type_str):
-        depth = 0  # Keep track of the depth inside the parentheses
-        position = 0  # Keep track of the current position
-        position_list = []  # Dictionary to store the positions
+        elements = type_str.split('-')  # Split the string by dashes
+        output = []
+        count = 0
 
-        for char in type_str:
-            if char == '-':
-                if depth == 0:  # Only increment position if not in parentheses
-                    position += 1
-            elif char == '(':
-                depth += 1  # Increase depth when entering parentheses
-            elif char == ')':
-                depth -= 1  # Decrease depth when exiting parentheses
-            elif char.isalpha():  # Only process alphabetic characters
-                position_list.append(position)
+        for elem in elements:
+            # Check for grouped elements (enclosed in parentheses)
+            if '(' in elem:
+                output.append(count)
+            else:
+                output.append(count)
+                count += 1
 
-        return position_list
+        return output
         
         
 

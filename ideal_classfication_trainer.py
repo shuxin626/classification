@@ -150,7 +150,8 @@ class IdealClassificationTrainer():
                 epoch, val_loader)
             result_epoch['train_loss'], result_epoch['train_acc'] = self.test(epoch, train_loader, True)
             
-            self.scheduler.step(result_epoch['train_loss'])
+            if self.train_param['optimizer'] == 'sgd':
+                self.scheduler.step(result_epoch['train_loss'])
             
             result_lst, best_result, early_stop_counter = self.summarize_result(epoch, result_epoch, result_lst, best_result, early_stop_counter,self.train_param['checkpoint']['save_checkpoint'], self.train_param['checkpoint']['metrics'], self.train_param['early_stop_metrics'])
 
