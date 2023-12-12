@@ -14,7 +14,8 @@ class IdealClassificationTrainer():
         if train_param['pretrained']['load_pretrained']:
             ckpt_controller = CkptController(None, clean_prev_ckpt_flag=False, ckpt_dir=train_param['pretrained']['ckpt_dir'])
             self.ckpt_state = ckpt_controller.load_ckpt(train_param['pretrained']['ckpt_num'])
-            self.model.load_state_dict(self.ckpt_state['state_dict'])
+            ckpt_state_dict = {name: weights for name, weights in self.ckpt_state['state_dict'].items() if 'linear' not in name}
+            self.model.load_state_dict(ckpt_state_dict, strict=False)
 
            
         if train_param['optimizer'] == 'sgd':

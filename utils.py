@@ -22,9 +22,9 @@ class CkptController(object):
         print('ckpt dir is {}'.format(self.ckpt_dir))
 
     def create_ckpt_dir_handle(self, train_param):
-        ckpt_dir = 'checkpoint/{}-{}-{}'.format(train_param['net'],
+        ckpt_dir = 'checkpoint/{}-{}-{}-{}'.format(train_param['net'],
                                                 train_param['batch_size'], 
-                                                train_param['lr'])
+                                                train_param['lr'], train_param['type-str'])
         ckpt_dir = ckpt_dir + self.dir_name_suffix
         cond_mkdir(ckpt_dir)
         return ckpt_dir
@@ -75,3 +75,12 @@ def clean_pt_files_in_dir(path_to_dir):
     filelist = glob.glob(os.path.join(path_to_dir, "*.pth"))
     for f in filelist:
         os.remove(f)
+        
+def load_ckpt_for_eval(ckpt_dir, ckpt_num, model):
+    ckpt_controller = CkptController(None, clean_prev_ckpt_flag=False, ckpt_dir=ckpt_dir)
+    ckpt_state = ckpt_controller.load_ckpt(ckpt_num)
+    model.load_state_dict(ckpt_state['state_dict'])
+    print('loaded model has train accuracy {}'.format(ckpt_state['train_acc']))
+    print('loaded model has val accuracy {}'.format(ckpt_state['val_acc']))
+    return model
+    

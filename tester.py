@@ -13,14 +13,9 @@ from drawing import scatter3d_draw, color_dict
 
 class ClassificationTester(object):
 
-    def __init__(self, model, ckpt_dir, ckpt_num, dataset_for_test, tsne_param):
+    def __init__(self, model, dataset_for_test, tsne_param):
         self.model = model
         self.criterion = nn.CrossEntropyLoss()
-        ckpt_controller = CkptController(None, clean_prev_ckpt_flag=False, ckpt_dir=ckpt_dir)
-        self.ckpt_state = ckpt_controller.load_ckpt(ckpt_num)
-        self.model.load_state_dict(self.ckpt_state['state_dict'])
-        print('loaded model has train accuracy {}'.format(self.ckpt_state['train_acc']))
-        print('loaded model has val accuracy {}'.format(self.ckpt_state['val_acc']))
         self.dataset_for_test = dataset_for_test
         self.tsne_param = tsne_param
 
@@ -126,7 +121,7 @@ class ClassificationTester(object):
             if self.tsne_param['path_to_save_data'] is not None:
                 df_tsne.to_csv(self.tsne_param['path_to_save_data'], index=False)
             if self.tsne_param['draw_figure']:
-                scatter3d_draw(df_tsne, ['Monocyte', 'Granulocyte', 'Lymphocyte'])
+                scatter3d_draw(df_tsne, ['Monocyte', 'Granulocyte', 'Lymphocyte']) # change manually
 
                 
                 
