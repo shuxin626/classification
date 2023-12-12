@@ -7,9 +7,9 @@ import numpy as np
 import pickle
 from sklearn.metrics import precision_recall_curve, average_precision_score
 
-color_dict = {'Monocyte':'#FF0000', 'Granulocyte': '#18AE18',
-              'Lymphocyte': '#854836', 'B lymphocyte': '#3447FE',
-              'T lymphocyte': '#FF9900', 'CD4': '#0C99C1', 'CD8': '#F30CD4'}
+color_dict = {'m':'#FF0000', 'g': '#18AE18',
+              '(b-t)': '#854836', 'b': '#3447FE',
+              't': '#FF9900', 'CD4': '#0C99C1', 'CD8': '#F30CD4'}
 
 
 

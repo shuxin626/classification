@@ -8,7 +8,7 @@ from resnet_torch import *
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from utils import load_ckpt_for_eval
 
-mode = 'train' # from ['train', 'test', 'grad_cam']
+mode = 'test' # from ['train', 'test', 'grad_cam']
 
 train_param = {
     'optimizer':'sgd', # ['sgd', 'adam']
@@ -36,12 +36,12 @@ train_param = {
     }
 
 eval_param = {
-    'dataset_for_test': ['val'],
-    'ckpt_dir': 'checkpoint/unet10-64-0.0005-m-g-(b-t)',
+    'dataset_for_test': ['test'],
+    'ckpt_dir': 'checkpoint/unet10-32-0.0005-m-g-b-t',
     'ckpt_num': None,
     'cascade_param':
         {
-            'if_cascade': True,
+            'if_cascade': False,
             'ckpt_dir': 'checkpoint/unet10-32-0.0005-b-t',
             'further_classify_which_type_in_first_model': 2, # int
         },
@@ -73,7 +73,7 @@ if mode == 'train':
     trainer = IdealClassificationTrainer(model, train_param)
     trainer.fit(train_loader, val_loader)
 elif mode == 'test' and eval_param['cascade_param']['if_cascade'] == False:
-    tester = ClassificationTester(model, eval_param['dataset_for_test'], eval_param['tsne_param'])
+    tester = ClassificationTester(model, eval_param['dataset_for_test'], eval_param['tsne_param'], train_param['type-str'])
     tester.fit(train_loader, val_loader, test_loader)
 elif mode == 'test' and eval_param['cascade_param']['if_cascade'] == True:
     tester = CascadedClassificationTester(model1, model2, eval_param['dataset_for_test'], eval_param['cascade_param']['further_classify_which_type_in_first_model'])

@@ -13,11 +13,12 @@ from drawing import scatter3d_draw, color_dict
 
 class ClassificationTester(object):
 
-    def __init__(self, model, dataset_for_test, tsne_param):
+    def __init__(self, model, dataset_for_test, tsne_param, type_str):
         self.model = model
         self.criterion = nn.CrossEntropyLoss()
         self.dataset_for_test = dataset_for_test
         self.tsne_param = tsne_param
+        self.type_str = type_str
 
     def test(self, dataloader):
         # topest_mask_ind is the ind of the best mask in the batch of maskquery
@@ -121,7 +122,7 @@ class ClassificationTester(object):
             if self.tsne_param['path_to_save_data'] is not None:
                 df_tsne.to_csv(self.tsne_param['path_to_save_data'], index=False)
             if self.tsne_param['draw_figure']:
-                scatter3d_draw(df_tsne, ['Monocyte', 'Granulocyte', 'Lymphocyte']) # change manually
+                scatter3d_draw(df_tsne, self.type_str.split('-')) # change manually
 
                 
                 
