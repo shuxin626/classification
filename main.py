@@ -10,13 +10,17 @@ from utils import load_ckpt_for_eval
 
 mode = 'test' # from ['train', 'test', 'grad_cam']
 
+data_param = {
+    'type-str': 'm-g-b-t', # ['b-t', 'm-g-(b-t)', 'm-g-b-t']
+    'val_num_per_type': 100, 
+    'shuffle_data': True,
+    'data_folder': '../direct_cut/',
+}
+
 train_param = {
     'optimizer':'sgd', # ['sgd', 'adam']
     'lr': 0.0005,
     'batch_size': 32,
-    'type-str': 'm-g-b-t', # ['b-t', 'm-g-(b-t)', 'm-g-b-t']
-    'val_num_per_type': 100, 
-    'shuffle_data': True,
     'net': 'unet10',
     'training_epochs': 1000,
     'early_stop_epochs': 30,
@@ -27,7 +31,6 @@ train_param = {
         'dir_name_suffix': '',
         'metrics': 'val_loss',
     },
-    'data_folder': '../direct_cut/',
     'pretrained': {
         'load_pretrained': False, # for fine-tune b-t classifier
         'ckpt_dir': 'checkpoint/unet10-64-0.0005-m-g-(b-t)',
@@ -49,13 +52,14 @@ eval_param = {
         'cal_tsne': True,
         'path_to_save_data': 'tsne_data/test_tsne_and_targets.csv',
         'draw_figure': True,
-    }
+    },
+    'draw_prc': True,
 }
 
-train_loader, val_loader, test_loader, type_count = dataio(train_param['data_folder'], train_param['batch_size'], 
-                                                           shuffle_data=train_param['shuffle_data'], 
-                                                           val_num_per_type=train_param['val_num_per_type'],
-                                                           type_str=train_param['type-str'])
+train_loader, val_loader, test_loader, type_count = dataio(data_param['data_folder'], train_param['batch_size'], 
+                                                           shuffle_data=data_param['shuffle_data'], 
+                                                           val_num_per_type=data_param['val_num_per_type'],
+                                                           type_str=data_param['type-str'])
 if train_param['net'] == 'unet10': 
     if mode=='train':
         model = ResNet10(1, type_count).to(device)
@@ -73,11 +77,11 @@ if mode == 'train':
     trainer = IdealClassificationTrainer(model, train_param)
     trainer.fit(train_loader, val_loader)
 elif mode == 'test' and eval_param['cascade_param']['if_cascade'] == False:
-    tester = ClassificationTester(model, eval_param['dataset_for_test'], eval_param['tsne_param'], train_param['type-str'])
+    tester = ClassificationTester(model, eval_param['dataset_for_test'], eval_param, data_param['type-str'])
     tester.fit(train_loader, val_loader, test_loader)
 elif mode == 'test' and eval_param['cascade_param']['if_cascade'] == True:
     tester = CascadedClassificationTester(model1, model2, eval_param['dataset_for_test'], eval_param['cascade_param']['further_classify_which_type_in_first_model'])
     tester.fit(train_loader, val_loader, test_loader)
 elif mode == 'grad_cam':
-    tester = ClassificationTester(model, eval_param['dataset_for_test'], eval_param['tsne_param'])
+    tester = ClassificationTester(model, eval_param['dataset_for_test'], eval_param, data_param['type-str'])
     tester.grad_cam(val_loader)

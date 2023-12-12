@@ -42,32 +42,22 @@ def scatter3d_draw(df, cell_types):
     fig.show()
 
 
-# def bar_draw(fig, file, color_sequence, type_sequence, row, col, show_legend=True, y_title='',
-#              x_title=''):
-#   acu_matrix = pd.read_excel(file)
-#   acu_matrix = pd.melt(acu_matrix, id_vars=['Type'],
-#                        value_vars=['Recall','Precision','F1-score'], var_name='Matrix')
-#   sub_fig = px.bar(acu_matrix, x='Matrix', y='value', color='Type', barmode='group')
-#   for i, d in enumerate(sub_fig.data):
-#     fig.add_trace((go.Bar(x=d['x'], y=d['y'], name='',
-#                           marker_color=color_sequence[i], legendgroup=type_sequence[i],
-#                           showlegend=show_legend, legendgrouptitle_text=type_sequence[i])), row=row, col=col)
-#   fig.update_yaxes(title_text=y_title, range=[0, 1.02], col=col, row=row)
-#   fig.update_xaxes(title_text=x_title, col=col, row=row)
 
-# def prc_draw(fig, file, cell_type, color_dict, row, col, show_legend=True,
-#              y_title='', x_title=''):
-#   with open(file, 'rb') as f:
-#     result_dict = pickle.load(f)
-#   for i in range(result_dict['score'].shape[1]):
-#     y_true = utils.to_categorical(result_dict['target']).astype(int)
-#     y_score = result_dict['score']
-#     precision, recall, _ = precision_recall_curve(y_true[:, i], y_score[:, i])
-#     fig.add_trace(
-#       go.Scatter(x=recall, y=precision, name='', mode='lines', legendgroup=cell_type[i],
-#                  legendgrouptitle_text=cell_type[i], marker_color=color_dict[cell_type[i]], showlegend=show_legend), row=row, col=col)
-#     fig.update_xaxes(title_text=x_title, range=[0, 1.02], col=col, row=row)
-#     fig.update_yaxes(title_text=y_title, range=[0, 1.02], col=col, row=row)
+def prc_draw(result_dict, cell_type):
+    traces = []
+    for i in range(result_dict['score'].shape[1]):
+        y_true_binary = (result_dict['target'] == i).int()
+        precision, recall, _ = precision_recall_curve(y_true_binary, result_dict['score'][:, i])
+        trace = go.Scatter(x=recall, y=precision, name='', mode='lines', marker_color=color_dict[cell_type[i]])
+        traces.append(trace)
+
+    layout = go.Layout(
+        title='Precision-Recall Curves per Class',
+        xaxis=dict(title='Recall'),
+        yaxis=dict(title='Precision'))
+
+    fig = go.Figure(data=traces, layout=layout)
+    fig.show()
 
 
 

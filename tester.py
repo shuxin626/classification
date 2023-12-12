@@ -9,15 +9,16 @@ import torch.nn.functional as F
 from sklearn.manifold import TSNE
 import pickle
 import pandas as pd
-from drawing import scatter3d_draw, color_dict
+from drawing import scatter3d_draw, prc_draw
 
 class ClassificationTester(object):
 
-    def __init__(self, model, dataset_for_test, tsne_param, type_str):
+    def __init__(self, model, dataset_for_test, eval_param, type_str):
         self.model = model
         self.criterion = nn.CrossEntropyLoss()
         self.dataset_for_test = dataset_for_test
-        self.tsne_param = tsne_param
+        self.tsne_param = eval_param['tsne_param']
+        self.draw_prc = eval_param['dra_prc']
         self.type_str = type_str
 
     def test(self, dataloader):
@@ -27,7 +28,7 @@ class ClassificationTester(object):
         correct = 0
         total = 0
         # for subbatch mode
-        outputs_accum = torch.tensor([]).to(device)
+        outputs_all = torch.tensor([]).to(device)
         feature_all = torch.tensor([])
         targets_all = torch.tensor([])
         
@@ -46,7 +47,7 @@ class ClassificationTester(object):
                 total += targets.size(0)
                 correct += predicted.eq(targets).sum().item()
                 feature_all = torch.cat((feature_all, feature_batch.cpu()), dim=0)
-
+                outputs_all = torch.cat((outputs_all, outputs.clone().cpu()), dim=0)
                 
                 if (iter_idx + 1) % 5 == 0:
                     print('[{:6}/{:6} ({:3.0f}%)]\tLoss: {:.6f}'.format(
@@ -57,7 +58,7 @@ class ClassificationTester(object):
                     )
 
         acc = 100.*correct/total
-        return acc, [feature_all, targets_all]
+        return acc, {'feature': feature_all, 'target': targets_all, 'output': outputs_all}
     
     def grad_cam(self, dataloader):
         self.model.eval()        
@@ -113,8 +114,8 @@ class ClassificationTester(object):
             print("exp test acc is : %3.4f" % (test_acc))
             
         if self.tsne_param['cal_tsne'] == True:
-            feature_all = feature_and_target_all[0].numpy()
-            targets_all = feature_and_target_all[1].numpy()
+            feature_all = feature_and_target_all['feature'].numpy()
+            targets_all = feature_and_target_all['target'].numpy()
             tsne = TSNE(n_components=3, random_state=42)
             tsne_results = tsne.fit_transform(feature_all)
             df_tsne = pd.DataFrame(tsne_results, columns=['x', 'y', 'z'])
@@ -123,6 +124,14 @@ class ClassificationTester(object):
                 df_tsne.to_csv(self.tsne_param['path_to_save_data'], index=False)
             if self.tsne_param['draw_figure']:
                 scatter3d_draw(df_tsne, self.type_str.split('-')) # change manually
+
+        if self.draw_prc == True:
+            outputs_all = feature_and_target_all['output'].numpy()
+            targets_all = feature_and_target_all['target'].numpy()
+            prc_dict = {'score': outputs_all, 'target': targets_all}
+            prc_draw(prc_dict, self.type_str.split('-'))
+
+
 
                 
                 
