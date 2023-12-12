@@ -80,7 +80,7 @@ class IdealClassificationTrainer():
             targets = targets.type(torch.LongTensor)
             targets = targets.to(device)
             self.optimizer.zero_grad()
-            outputs = self.model(inputs)
+            outputs, _ = self.model(inputs)
             loss = self.criterion(outputs, targets)
             loss.backward()
             self.optimizer.step()
@@ -113,7 +113,7 @@ class IdealClassificationTrainer():
                 inputs = inputs.float().to(device)
                 targets = targets.type(torch.LongTensor)
                 targets = targets.to(device)
-                outputs = self.model(inputs)
+                outputs, _ = self.model(inputs)
                 loss = self.criterion(outputs, targets)
                 test_loss += loss.item()
 

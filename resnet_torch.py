@@ -83,7 +83,7 @@ class ResNet(nn.Module):
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2) if num_blocks[3] is not None else None
         self.layer5 = self._make_layer(block, 1024, num_blocks[4], stride=2)  if num_blocks[4] is not None else None
 
-
+        self.average_pool = nn.AdaptiveAvgPool2d(1)
         self.linear = nn.LazyLinear(num_classes)
 
     def _make_layer(self, block, planes, num_blocks, stride):
@@ -119,12 +119,15 @@ class ResNet(nn.Module):
         out = self.layer3(out) if self.layer3 is not None else out
         out = self.layer4(out) if self.layer4 is not None else out
         if cal_grad_cam: h = out.register_hook(self.activations_hook)
-        out = F.avg_pool2d(out, 4)
-        out = self.layer5(out) if self.layer5 is not None else out
+        out = self.layer5(out) if self.layer5 is not None else out # different from original script
+        
+        out = self.average_pool(out) # different from original script
 
         out = out.view(out.size(0), -1)
+        feature_for_classification = out.clone().detach()
+
         out = self.linear(out)
-        return out
+        return out, feature_for_classification
 
 
 def ResNet18(in_ch, num_classes):
