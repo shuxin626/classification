@@ -7,12 +7,12 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
 class IdealClassificationTrainer():
-    def __init__(self, model, train_param):
+    def __init__(self, model, train_param, data_param):
         super(IdealClassificationTrainer, self).__init__()
 
         self.model = model
         if train_param['pretrained']['load_pretrained']:
-            ckpt_controller = CkptController(None, clean_prev_ckpt_flag=False, ckpt_dir=train_param['pretrained']['ckpt_dir'])
+            ckpt_controller = CkptController(None, data_param, clean_prev_ckpt_flag=False, ckpt_dir=train_param['pretrained']['ckpt_dir'])
             self.ckpt_state = ckpt_controller.load_ckpt(train_param['pretrained']['ckpt_num'])
             ckpt_state_dict = {name: weights for name, weights in self.ckpt_state['state_dict'].items() if 'linear' not in name}
             self.model.load_state_dict(ckpt_state_dict, strict=False)
@@ -32,7 +32,7 @@ class IdealClassificationTrainer():
 
         if self.train_param['checkpoint']['save_checkpoint']:
             self.ckpt_controller = CkptController(
-                train_param, self.train_param['checkpoint']['clean_prev_ckpt_flag'], dir_name_suffix=self.train_param['checkpoint']['dir_name_suffix'])
+                train_param, data_param, self.train_param['checkpoint']['clean_prev_ckpt_flag'], dir_name_suffix=self.train_param['checkpoint']['dir_name_suffix'])
    
     
     def summarize_result(self, epoch, result_epoch, result_lst, best_result, early_stop_counter, save_ckpt,

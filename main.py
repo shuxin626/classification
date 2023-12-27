@@ -13,39 +13,39 @@ mode = 'test' # from ['train', 'test', 'grad_cam']
 data_param = {
     'type-str': 'm-g-b-t', # ['b-t', 'm-g-(b-t)', 'm-g-b-t']
     'val_num_per_type': 100, 
-    'shuffle_data': True,
+    'shuffle_data': False,
     'data_folder': '../direct_cut/',
 }
 
 train_param = {
-    'optimizer':'sgd', # ['sgd', 'adam']
-    'lr': 0.0005,
-    'batch_size': 32,
+    'optimizer':'adam', # ['sgd', 'adam']
+    'lr': 0.00008, # adam 0.00008 for three types aug
+    'batch_size': 16,
     'net': 'unet10',
     'training_epochs': 1000,
-    'early_stop_epochs': 30,
+    'early_stop_epochs': 15,
     'early_stop_metrics': 'val_loss',
     'checkpoint': {
         'save_checkpoint': True,
         'clean_prev_ckpt_flag': True,
-        'dir_name_suffix': '',
+        'dir_name_suffix': 'aug',
         'metrics': 'val_loss',
     },
     'pretrained': {
         'load_pretrained': False, # for fine-tune b-t classifier
-        'ckpt_dir': 'checkpoint/unet10-64-0.0005-m-g-(b-t)',
+        'ckpt_dir': 'checkpoint/unet10-16-8e-05-m-g-(b-t)aug',
         'ckpt_num': None,  # int
     }
     }
 
 eval_param = {
     'dataset_for_test': ['test'],
-    'ckpt_dir': 'checkpoint/unet10-32-0.0005-m-g-b-t',
+    'ckpt_dir': 'checkpoint/unet10-16-8e-05-m-g-(b-t)aug',
     'ckpt_num': None,
     'cascade_param':
         {
-            'if_cascade': False,
-            'ckpt_dir': 'checkpoint/unet10-32-0.0005-b-t',
+            'if_cascade': True,
+            'ckpt_dir': 'checkpoint/unet10-16-0.0001-b-t',
             'further_classify_which_type_in_first_model': 2, # int
         },
     'tsne_param': { # only take effect when 'if_cascade' = False
@@ -74,7 +74,7 @@ if train_param['net'] == 'unet10':
         model2 = load_ckpt_for_eval(eval_param['cascade_param']['ckpt_dir'], None, model2)
 
 if mode == 'train':
-    trainer = IdealClassificationTrainer(model, train_param)
+    trainer = IdealClassificationTrainer(model, train_param, data_param)
     trainer.fit(train_loader, val_loader)
 elif mode == 'test' and eval_param['cascade_param']['if_cascade'] == False:
     tester = ClassificationTester(model, eval_param['dataset_for_test'], eval_param, data_param['type-str'])

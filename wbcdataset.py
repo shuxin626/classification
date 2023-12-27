@@ -15,7 +15,7 @@ def dataio(folder_name, batch_size, shuffle_data=True, val_num_per_type=100, typ
     train_indices, train_sampling_weight, val_indices = split_train_and_val(dataset_train_val.index_for_each_type, val_num_per_type, shuffle_data=shuffle_data)
 
     data_transforms =  transforms.Compose([
-                        transforms.RandomAffine(degrees=180, translate=(0, 0)),
+                        transforms.RandomAffine(degrees=180, translate=(0.01, 0.01)),
                         ]
                         )
     

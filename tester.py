@@ -10,6 +10,10 @@ from sklearn.manifold import TSNE
 import pickle
 import pandas as pd
 from drawing import scatter3d_draw, prc_draw
+from torcheval.metrics.functional import multiclass_f1_score
+from sklearn.metrics import confusion_matrix
+import re
+
 
 class ClassificationTester(object):
 
@@ -31,6 +35,7 @@ class ClassificationTester(object):
         outputs_all = torch.tensor([])
         feature_all = torch.tensor([])
         targets_all = torch.tensor([])
+        predicts_all = torch.tensor([])
         
         with torch.no_grad():
             for iter_idx, (inputs, targets) in enumerate(dataloader):
@@ -48,6 +53,7 @@ class ClassificationTester(object):
                 correct += predicted.eq(targets).sum().item()
                 feature_all = torch.cat((feature_all, feature_batch.cpu()), dim=0)
                 outputs_all = torch.cat((outputs_all, outputs.clone().cpu()), dim=0)
+                predicts_all = torch.cat((predicts_all, predicted.cpu()))
                 
                 if (iter_idx + 1) % 5 == 0:
                     print('[{:6}/{:6} ({:3.0f}%)]\tLoss: {:.6f}'.format(
@@ -58,7 +64,10 @@ class ClassificationTester(object):
                     )
 
         acc = 100.*correct/total
-        return acc, {'feature': feature_all, 'target': targets_all, 'output': outputs_all}
+        f1_score = multiclass_f1_score(predicts_all.type(torch.int64), targets_all.type(torch.int64), num_classes=torch.max(targets_all)+1, average=None)
+        conf_mat = confusion_matrix(targets_all, predicts_all)
+        
+        return acc, {'feature': feature_all, 'target': targets_all, 'output': outputs_all}, f1_score, conf_mat
     
     def grad_cam(self, dataloader):
         self.model.eval()        
@@ -102,17 +111,24 @@ class ClassificationTester(object):
 
         if 'train' in self.dataset_for_test: 
             print('test train dataset')
-            train_acc, feature_and_target_all = self.test(train_loader)
-            print("exp train acc is : %3.4f" % (train_acc))    
+            train_acc, feature_and_target_all, train_f1_score, train_conf_mat = self.test(train_loader)
+            print("exp train acc is : %3.4f" % (train_acc))  
+            print('exp train f1 score is:', train_f1_score)  
+            print('exp train confusion matrix is:', train_conf_mat)
         if 'val' in self.dataset_for_test: 
             print('test val dataset')
-            val_acc, feature_and_target_all = self.test(val_loader)
+            val_acc, feature_and_target_all, val_f1_score, val_conf_mat = self.test(val_loader)
             print("exp val acc is : %3.4f" % (val_acc))
+            print('exp val f1 score is:', val_f1_score)
+            print('exp val confusion matrix is:', val_conf_mat)
         if 'test' in self.dataset_for_test:
             print('test test dataset')
-            test_acc, feature_and_target_all = self.test(test_loader)
+            test_acc, feature_and_target_all, test_f1_score, test_conf_mat = self.test(test_loader)
             print("exp test acc is : %3.4f" % (test_acc))
-            
+            print('exp test f1 score is:', test_f1_score)
+            print('exp test confusion matrix is:', test_conf_mat)
+
+        pattern = re.compile(r'\w+|\(\w+-\w+\)')
         if self.tsne_param['cal_tsne'] == True:
             feature_all = feature_and_target_all['feature'].numpy()
             targets_all = feature_and_target_all['target'].numpy()
@@ -123,13 +139,13 @@ class ClassificationTester(object):
             if self.tsne_param['path_to_save_data'] is not None:
                 df_tsne.to_csv(self.tsne_param['path_to_save_data'], index=False)
             if self.tsne_param['draw_figure']:
-                scatter3d_draw(df_tsne, self.type_str.split('-')) # change manually
+                scatter3d_draw(df_tsne, pattern.findall(self.type_str)) # change manually
 
         if self.draw_prc == True:
             outputs_all = feature_and_target_all['output'].numpy()
             targets_all = feature_and_target_all['target'].numpy()
             prc_dict = {'score': outputs_all, 'target': targets_all}
-            prc_draw(prc_dict, self.type_str.split('-'))
+            prc_draw(prc_dict, pattern.findall(self.type_str))
 
 
 
