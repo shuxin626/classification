@@ -49,6 +49,7 @@ class CascadedClassificationTester(object):
                 total += targets.size(0)
                 correct += predicted_labels1.eq(targets).sum().item()
                 predict_accum = torch.concat((predict_accum, predicted_labels1))
+
                 
                 if (iter_idx + 1) % 5 == 0:
                     print('[{:6}/{:6} ({:3.0f}%)]'.format(

@@ -10,7 +10,7 @@ from sklearn.manifold import TSNE
 import pickle
 import pandas as pd
 from drawing import scatter3d_draw, prc_draw
-from torcheval.metrics.functional import multiclass_f1_score
+# from torcheval.metrics.functional import multiclass_f1_score
 from sklearn.metrics import confusion_matrix
 import re
 

@@ -27,7 +27,7 @@ train_param = {
     'early_stop_metrics': 'val_loss',
     'checkpoint': {
         'save_checkpoint': True,
-        'clean_prev_ckpt_flag': True,
+        'clean_prev_ckpt_flag': False,
         'dir_name_suffix': 'aug',
         'metrics': 'val_loss',
     },
@@ -40,7 +40,7 @@ train_param = {
 
 eval_param = {
     'dataset_for_test': ['test'],
-    'ckpt_dir': 'checkpoint/unet10-16-8e-05-m-g-(b-t)aug',
+    'ckpt_dir': 'checkpoint/unet10-16-8e-05-m-g-b-taug',
     'ckpt_num': None,
     'cascade_param':
         {
